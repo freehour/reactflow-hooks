@@ -1,7 +1,7 @@
 {
     "name": "reactflow-hooks",
     "private": false,
-    "version": "0.1.8",
+    "version": "0.2.0",
     "type": "module",
     "description": "Useful hooks for reactflow",
     "scripts": {
@@ -14,9 +14,6 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "dependencies": {
-        "reactflow": "^11.11.3"
-    },
-    "peerDependencies": {
         "reactflow": "^11.11.3"
     },
     "devDependencies": {

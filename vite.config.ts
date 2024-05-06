@@ -4,7 +4,9 @@ import dts from 'vite-plugin-dts';
 import { EsLinter, linterPlugin } from 'vite-plugin-linter';
 import tsConfigPaths from 'vite-tsconfig-paths';
 
-const dependencies = ['reactflow'];
+import * as packageJson from './package.json';
+
+const dependencies = [...Object.keys(packageJson.dependencies || {})];
 
 export default defineConfig(configEnv => ({
     plugins: [
