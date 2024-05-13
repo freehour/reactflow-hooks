@@ -20,6 +20,18 @@ A hook that returns the current node without subscribing to changes.
 function useNode<T = any>(): Node<T> | never;
 ```
 
+### useNodeActions
+
+A hook that returns actions that can be performed on the current node.
+
+```typescript
+interface NodeActions {
+    deleteNode: () => void;
+}
+
+function useNodeActions<T = any>(): NodeActions<T> | never;
+```
+
 ### useNodeState
 
 A hook that subscribes to changes in the current node's state.

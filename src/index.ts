@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import type { ReactFlowState } from 'reactflow';
 import { useReactFlow } from 'reactflow';
 import * as ReactFlow from 'reactflow';
@@ -11,13 +12,13 @@ import * as ReactFlow from 'reactflow';
  * @throws If the hook is not used inside a node or its children.
  */
 export function useNodeId(): string | never {
-    const nodeId = ReactFlow.useNodeId();
+    const id = ReactFlow.useNodeId();
 
-    if (nodeId === null) {
+    if (id === null) {
         throw new Error('Node ID is null. Make sure to call useNodeId() from a node or its children');
     }
 
-    return nodeId;
+    return id;
 }
 
 /**
@@ -29,14 +30,35 @@ export function useNodeId(): string | never {
  */
 export function useNode<T = any>(): ReactFlow.Node<T> | never {
     const reactflow = useReactFlow<T>();
-    const nodeId = useNodeId();
-    const node = reactflow.getNode(nodeId);
+    const id = useNodeId();
+    const node = reactflow.getNode(id);
 
     if (!node) {
-        throw new Error(`Node with ID '${nodeId}' not found. Make sure to call useNode() from a node or its children`);
+        throw new Error(`Node with ID '${id}' not found. Make sure to call useNode() from a node or its children`);
     }
 
     return node;
+}
+
+export interface NodeActions {
+
+    /**
+     * Deletes the current node.
+     */
+    deleteNode: () => void;
+
+}
+
+export function useNodeActions<T = any>(): NodeActions {
+    const reactflow = useReactFlow<T>();
+    const id = useNodeId();
+
+    return {
+        deleteNode: useCallback(
+            () => reactflow.deleteElements({ nodes: [{ id }] }),
+            [reactflow, id],
+        ),
+    };
 }
 
 /**
@@ -52,14 +74,14 @@ export function useNodeState<T = any, U = ReactFlow.Node<T>>(
     selector?: (node: ReactFlow.Node<T>) => U,
     equalityFn?: (a: U, b: U) => boolean,
 ): U | never {
-    const nodeId = useNodeId();
+    const id = useNodeId();
 
     return ReactFlow.useStore(state => {
-        const node = state.getNodes().find(n => n.id === nodeId);
+        const node = state.getNodes().find(n => n.id === id);
 
         if (!node) {
             throw new Error(
-                `Node with ID '${nodeId}' not found. Make sure to call useNodeState() from a node or its children`,
+                `Node with ID '${id}' not found. Make sure to call useNodeState() from a node or its children`,
             );
         }
 
@@ -76,7 +98,10 @@ export function useNodeState<T = any, U = ReactFlow.Node<T>>(
  * @returns The selected part of the node data.
  * @throws If the hook is not used inside a node or its children.
  */
-export function useNodeData<T, U = T>(selector?: (data: T) => U, equalityFn?: (a: U, b: U) => boolean): U | never {
+export function useNodeData<T, U = T>(
+    selector?: (data: T) => U,
+    equalityFn?: (a: U, b: U) => boolean,
+): U | never {
     return useNodeState(node => (selector ? selector(node.data) : (node.data as U)), equalityFn);
 }
 
@@ -84,44 +109,52 @@ export function useNodeData<T, U = T>(selector?: (data: T) => U, equalityFn?: (a
  * Returns whether the specified input handle is connected given a reactflow state.
  *
  * @param state The reactflow state.
- * @param nodeId The id of the node.
+ * @param id The id of the node.
  * @param inputId The id of the input handle.
  * @returns Whether the input handle is connected.
  */
-export function isInputConnected(state: ReactFlowState, nodeId: string, inputId: string | null): boolean {
-    return state.edges.some(edge => edge.target === nodeId && (edge.targetHandle ?? null) === inputId);
+export function isInputConnected(
+    state: ReactFlowState,
+    id: string,
+    inputId: string | null,
+): boolean {
+    return state.edges.some(edge => edge.target === id && (edge.targetHandle ?? null) === inputId);
 }
 
 /**
  * Returns whether the specified output handle is connected given a reactflow state.
  *
  * @param state The reactflow state.
- * @param nodeId The id of the node.
+ * @param id The id of the node.
  * @param outputId The id of the output handle.
  * @returns Whether the output handle is connected.
  */
-export function isOutputConnected(state: ReactFlowState, nodeId: string, outputId: string | null): boolean {
-    return state.edges.some(edge => edge.source === nodeId && (edge.sourceHandle ?? null) === outputId);
+export function isOutputConnected(
+    state: ReactFlowState,
+    id: string,
+    outputId: string | null,
+): boolean {
+    return state.edges.some(edge => edge.source === id && (edge.sourceHandle ?? null) === outputId);
 }
 
 /**
  * Returns whether the specified handle is connected given a reactflow state.
  *
  * @param state The reactflow state.
- * @param nodeId The id of the node.
+ * @param id The id of the node.
  * @param handleId The id of the handle.
  * @param handleType The type ("source" or "target") of the handle.
  * @returns Whether the handle is connected.
  */
 export function isHandleConnected(
     state: ReactFlowState,
-    nodeId: string,
+    id: string,
     handleId: string | null,
     handleType: ReactFlow.HandleType,
 ): boolean {
     return handleType === 'target'
-        ? isInputConnected(state, nodeId, handleId)
-        : isOutputConnected(state, nodeId, handleId);
+        ? isInputConnected(state, id, handleId)
+        : isOutputConnected(state, id, handleId);
 }
 
 /**
@@ -133,8 +166,8 @@ export function isHandleConnected(
  * @throws If the hook is not used inside a node or its children.
  */
 export function useIsInputConnected(inputId: string): boolean | never {
-    const nodeId = useNodeId();
-    return ReactFlow.useStore(state => isInputConnected(state, nodeId, inputId));
+    const id = useNodeId();
+    return ReactFlow.useStore(state => isInputConnected(state, id, inputId));
 }
 
 /**
@@ -146,8 +179,8 @@ export function useIsInputConnected(inputId: string): boolean | never {
  * @throws If the hook is not used inside a node or its children.
  */
 export function useIsOutputConnected(outputId: string): boolean | never {
-    const nodeId = useNodeId();
-    return ReactFlow.useStore(state => isOutputConnected(state, nodeId, outputId));
+    const id = useNodeId();
+    return ReactFlow.useStore(state => isOutputConnected(state, id, outputId));
 }
 
 /**
@@ -159,7 +192,10 @@ export function useIsOutputConnected(outputId: string): boolean | never {
  * @returns Whether the handle is connected.
  * @throws If the hook is not used inside a node or its children.
  */
-export function useIsHandleConnected(handleId: string, handleType: ReactFlow.HandleType): boolean | never {
-    const nodeId = useNodeId();
-    return ReactFlow.useStore(state => isHandleConnected(state, nodeId, handleId, handleType));
+export function useIsHandleConnected(
+    handleId: string,
+    handleType: ReactFlow.HandleType,
+): boolean | never {
+    const id = useNodeId();
+    return ReactFlow.useStore(state => isHandleConnected(state, id, handleId, handleType));
 }
