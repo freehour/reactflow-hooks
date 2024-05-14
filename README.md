@@ -4,12 +4,12 @@ Useful hooks for ReactFlow
 
 
 
-### useNodeId
+### useAssertNodeId
 
 A version of reactflow's `useNode` hook that throws an error if not called within a node instead of returning `null`.
 
 ```typescript
-function useNodeId(): string | never;
+function useAssertNodeId(): string | never;
 ```
 
 ### useNode
@@ -52,6 +52,22 @@ function useNodeData<T, U = T>(
     selector?: (data: T) => U,
     equalityFn?: (a: U, b: U) => boolean
 ): U | never;
+```
+
+### useIngressEdges
+
+A hook that returns the ingoing edges of the current node.
+
+```typescript
+function useIngressEdges<T = any>(): ReactFlow.Edge<T>[] | never;
+```
+
+### useEgressEdges
+
+A hook that returns the outgoing edges of the current node.
+
+```typescript
+function useEgressEdges<T = any>(): ReactFlow.Edge<T>[] | never;
 ```
 
 ### useIsInputConnected

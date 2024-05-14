@@ -6,7 +6,10 @@ import tsConfigPaths from 'vite-tsconfig-paths';
 
 import * as packageJson from './package.json';
 
-const dependencies = [...Object.keys(packageJson.dependencies || {})];
+const dependencies = [
+    'react',
+    ...Object.keys(packageJson.dependencies || {})
+];
 
 export default defineConfig(configEnv => ({
     plugins: [

@@ -5,13 +5,15 @@ import * as ReactFlow from 'reactflow';
 
 
 /**
+ * Like useNodeId from reactflow, but throws an error if the id is null.
+ *
  * You can use this hook to get the id of the node it is used inside.
  * It is useful if you need the node's id deeper in the render tree but don't want to manually drill down the id as a prop.
  *
  * @returns The id of the node the hook is used in.
  * @throws If the hook is not used inside a node or its children.
  */
-export function useNodeId(): string | never {
+export function useAssertNodeId(): string | never {
     const id = ReactFlow.useNodeId();
 
     if (id === null) {
@@ -30,7 +32,7 @@ export function useNodeId(): string | never {
  */
 export function useNode<T = any>(): ReactFlow.Node<T> | never {
     const reactflow = useReactFlow<T>();
-    const id = useNodeId();
+    const id = useAssertNodeId();
     const node = reactflow.getNode(id);
 
     if (!node) {
@@ -51,13 +53,15 @@ export interface NodeActions {
 
 export function useNodeActions<T = any>(): NodeActions {
     const reactflow = useReactFlow<T>();
-    const id = useNodeId();
+    const id = useAssertNodeId();
+
+    const deleteNode = useCallback(
+        () => reactflow.deleteElements({ nodes: [{ id }] }),
+        [reactflow, id],
+    );
 
     return {
-        deleteNode: useCallback(
-            () => reactflow.deleteElements({ nodes: [{ id }] }),
-            [reactflow, id],
-        ),
+        deleteNode,
     };
 }
 
@@ -74,7 +78,7 @@ export function useNodeState<T = any, U = ReactFlow.Node<T>>(
     selector?: (node: ReactFlow.Node<T>) => U,
     equalityFn?: (a: U, b: U) => boolean,
 ): U | never {
-    const id = useNodeId();
+    const id = useAssertNodeId();
 
     return ReactFlow.useStore(state => {
         const node = state.getNodes().find(n => n.id === id);
@@ -103,6 +107,30 @@ export function useNodeData<T, U = T>(
     equalityFn?: (a: U, b: U) => boolean,
 ): U | never {
     return useNodeState(node => (selector ? selector(node.data) : (node.data as U)), equalityFn);
+}
+
+/**
+ * A hook that returns the ingoing edges of the current node.
+ *
+ * @returns The ingoing edges of the current node.
+ */
+export function useIngressEdges<T = any>(): ReactFlow.Edge<T>[] | never {
+    const id = useAssertNodeId();
+    const reactFlow = useReactFlow<any, T>();
+
+    return reactFlow.getEdges().filter(edge => edge.target === id);
+}
+
+/**
+ * A hook that returns the outgoing edges of the current node.
+ *
+ * @returns The outgoing edges of the current node.
+ */
+export function useEgressEdges<T = any>(): ReactFlow.Edge<T>[] | never {
+    const id = useAssertNodeId();
+    const reactFlow = useReactFlow<any, T>();
+
+    return reactFlow.getEdges().filter(edge => edge.source === id);
 }
 
 /**
@@ -166,7 +194,7 @@ export function isHandleConnected(
  * @throws If the hook is not used inside a node or its children.
  */
 export function useIsInputConnected(inputId: string): boolean | never {
-    const id = useNodeId();
+    const id = useAssertNodeId();
     return ReactFlow.useStore(state => isInputConnected(state, id, inputId));
 }
 
@@ -179,7 +207,7 @@ export function useIsInputConnected(inputId: string): boolean | never {
  * @throws If the hook is not used inside a node or its children.
  */
 export function useIsOutputConnected(outputId: string): boolean | never {
-    const id = useNodeId();
+    const id = useAssertNodeId();
     return ReactFlow.useStore(state => isOutputConnected(state, id, outputId));
 }
 
@@ -196,6 +224,6 @@ export function useIsHandleConnected(
     handleId: string,
     handleType: ReactFlow.HandleType,
 ): boolean | never {
-    const id = useNodeId();
+    const id = useAssertNodeId();
     return ReactFlow.useStore(state => isHandleConnected(state, id, handleId, handleType));
 }
