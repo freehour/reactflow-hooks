@@ -70,6 +70,22 @@ A hook that returns the outgoing edges of the current node.
 function useEgressEdges<T = any>(): ReactFlow.Edge<T>[] | never;
 ```
 
+### useSourceNodes
+
+A hook that returns the source nodes of the current node, i.e. the nodes that have an outgoing edge to the current node.
+
+```typescript
+function useSourceNodes<T = any>(): ReactFlow.Node<T>[] | never;
+```
+
+### useTargetNodes
+
+A hook that returns the target nodes of the current node, i.e. the nodes that have an ingoing edge from the current node.
+
+```typescript
+function useTargetNodes<T = any>(): ReactFlow.Node<T>[] | never;
+```
+
 ### useIsInputConnected
 
 A subscribing hook that returns whether a given input handle of the current node is connected.

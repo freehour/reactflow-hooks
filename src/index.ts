@@ -110,7 +110,7 @@ export function useNodeData<T, U = T>(
 }
 
 /**
- * A hook that returns the ingoing edges of the current node.
+ * A hook that returns the ingoing edges of the current node, i.e. the edges with the current node as target.
  *
  * @returns The ingoing edges of the current node.
  */
@@ -122,7 +122,7 @@ export function useIngressEdges<T = any>(): ReactFlow.Edge<T>[] | never {
 }
 
 /**
- * A hook that returns the outgoing edges of the current node.
+ * A hook that returns the outgoing edges of the current node, i.e. the edges with the current node as source.
  *
  * @returns The outgoing edges of the current node.
  */
@@ -131,6 +131,46 @@ export function useEgressEdges<T = any>(): ReactFlow.Edge<T>[] | never {
     const reactFlow = useReactFlow<any, T>();
 
     return reactFlow.getEdges().filter(edge => edge.source === id);
+}
+
+/**
+ * A hook that returns the source nodes of the current node, i.e. the nodes that have an outgoing edge to the current node.
+ *
+ * @returns The source nodes of the current node.
+ */
+export function useSourceNodes<T = any>(): ReactFlow.Node<T>[] | never {
+    const edges = useIngressEdges();
+    const reactFlow = useReactFlow<T>();
+
+    return edges.map(edge => {
+        const node = reactFlow.getNode(edge.source);
+
+        if (!node) {
+            throw new Error(`Node with ID '${edge.source}' not found, but is the source of an edge`);
+        }
+
+        return node;
+    });
+}
+
+/**
+ * A hook that returns the target nodes of the current node, i.e. the nodes that have an ingoing edge from the current node.
+ *
+ * @returns The target nodes of the current node.
+ */
+export function useTargetNodes<T = any>(): ReactFlow.Node<T>[] | never {
+    const edges = useEgressEdges();
+    const reactFlow = useReactFlow<T>();
+
+    return edges.map(edge => {
+        const node = reactFlow.getNode(edge.target);
+
+        if (!node) {
+            throw new Error(`Node with ID '${edge.target}' not found, but is the target of an edge`);
+        }
+
+        return node;
+    });
 }
 
 /**
